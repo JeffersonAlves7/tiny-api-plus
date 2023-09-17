@@ -15,9 +15,10 @@ async function main() {
 
   console.log({ TINYSESSID: tiny.TINYSESSID });
 
-  const relatorios = await tiny.obterRelatorioSaidasEntradas("01/07/2023", "30/09/2023")
+  await tiny.obterGiroConsiderandoEstoque(2);
+  // const relatorios = await tiny.obterRelatorioSaidasEntradas("01/07/2023", "30/09/2023")
 
-  writeJsonFile("relatorios.json", relatorios)
+  // writeJsonFile("relatorios.json", relatorios)
 }
 
 main();
