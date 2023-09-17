@@ -11,10 +11,7 @@ async function main() {
   );
 
   await tiny.loadTINYSESSIDFromDatabase();
-
-  if(!tiny.TINYSESSID){
-    await tiny.login();
-  }
+  await tiny.login();
 
   console.log({ TINYSESSID: tiny.TINYSESSID });
 

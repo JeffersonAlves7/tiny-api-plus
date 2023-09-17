@@ -17,8 +17,7 @@ const doLoginDataExample = {
     {
       cmd: "rt",
       val: {
-        urlLogoEmpresa:
-          "",
+        urlLogoEmpresa: "",
         verificar2FA: false,
         uidLogin: "",
         idUsuario: 0,
@@ -75,5 +74,30 @@ export class AuthRequests {
     };
 
     return axios.request(config);
+  }
+
+  static async verifyTINYSESSID(TINYSESSID: string): Promise<boolean> {
+    try {
+      let data = qs.stringify({
+        type: "1",
+        func: "obterDadosRelatorioSaldos",
+      });
+
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+          cookie: `TINYSESSID=${TINYSESSID};`,
+          "x-custom-request-for": "XAJAX",
+        },
+        data: data,
+      };
+      const response = await axios.request(config);
+      return !response.data.response[0]?.src.includes("redirect-on-login");
+    } catch (e){
+      return true;
+    }
   }
 }

@@ -2,6 +2,7 @@ import { AuthRequests } from "./requests/Auth";
 import { EstoqueRequests } from "./requests/Estoque";
 import sqlite3 from "sqlite3";
 import { format } from "date-fns";
+import writeJsonFile from "./utils/writeJsonFile";
 
 export class Tiny {
   TINYSESSID: string = "";
@@ -43,6 +44,12 @@ export class Tiny {
 
   async login() {
     try {
+      if (this.TINYSESSID) {
+        const isAuth = await AuthRequests.verifyTINYSESSID(this.TINYSESSID);
+        console.log({ isAuth });
+        if (isAuth) return;
+      }
+
       const email = this.userEmail;
       const password = this.userPassword;
 
