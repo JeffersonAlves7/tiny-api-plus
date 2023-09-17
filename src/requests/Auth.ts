@@ -18,11 +18,11 @@ const doLoginDataExample = {
       cmd: "rt",
       val: {
         urlLogoEmpresa:
-          "https://erp.tiny.com.br/exibe.logo.empresa?idEmpresa=751452427&logoMenor=N&nomeEmpresa=N",
+          "",
         verificar2FA: false,
-        uidLogin: "90d43f18726b4d843e789b98c0df9671ca785656",
-        idUsuario: 751452431,
-        login: "softhousesolutions23@gmail.com",
+        uidLogin: "",
+        idUsuario: 0,
+        login: "",
       },
     },
   ],
