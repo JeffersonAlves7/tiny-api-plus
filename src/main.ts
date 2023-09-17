@@ -18,14 +18,7 @@ async function main() {
 
   console.log({ TINYSESSID: tiny.TINYSESSID });
 
-  const relatorios = await tiny.obterEstoquesPorPeriodo(90)
-  // const diasParaRequisitar = ["15/09/2023", "16/09/2023", "17/09/2023"];
-
-  // const relatorios = await Promise.all(
-  //   diasParaRequisitar.map((dia) => tiny.obterEstoqueDoDia(dia))
-  // );
-
-  // console.log({ relatorios });
+  const relatorios = await tiny.obterRelatorioSaidasEntradas("01/07/2023", "30/09/2023")
 
   writeJsonFile("relatorios.json", relatorios)
 }

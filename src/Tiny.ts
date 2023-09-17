@@ -6,24 +6,26 @@ import { format } from "date-fns";
 export class Tiny {
   TINYSESSID: string = "";
 
-  constructor(public userEmail: string, public userPassword: string) {
-  }
+  constructor(public userEmail: string, public userPassword: string) {}
 
   async loadTINYSESSIDFromDatabase() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const db = new sqlite3.Database("temp/tiny.db");
 
       db.serialize(() => {
-        db.get("SELECT TINYSESSID FROM session ORDER BY rowid DESC LIMIT 1", (err, row: any) => {
-          if (!err && row) {
-            this.TINYSESSID = row.TINYSESSID;
+        db.get(
+          "SELECT TINYSESSID FROM session ORDER BY rowid DESC LIMIT 1",
+          (err, row: any) => {
+            if (!err && row) {
+              this.TINYSESSID = row.TINYSESSID;
+            }
+            resolve(true);
           }
-          resolve(true)
-        });
+        );
       });
 
       db.close();
-    })
+    });
   }
 
   private async saveTINYSESSIDToDatabase() {
@@ -82,7 +84,9 @@ export class Tiny {
    *
    * @param dia dd/mm/yyyy
    */
-  async obterEstoqueDoDia(dia: string): Promise<{ registros: any, dia: string }> {
+  async obterEstoqueDoDia(
+    dia: string
+  ): Promise<{ registros: any; dia: string }> {
     const response = await EstoqueRequests.relatorioEstoqueDoDia(
       dia,
       this.TINYSESSID
@@ -106,5 +110,16 @@ export class Tiny {
     }
 
     return estoques;
+  }
+
+  async obterRelatorioSaidasEntradas(diaInicio: string, diaFim: string) {
+    const response = await EstoqueRequests.relatorioSaidasEntradas(
+      diaInicio,
+      diaFim,
+      this.TINYSESSID
+    );
+
+    const { data } = response;
+    return { registros: data.response[0].val.registros };
   }
 }
