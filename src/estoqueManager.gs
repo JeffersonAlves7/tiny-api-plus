@@ -20,12 +20,11 @@ class EstoqueManager {
    * @param {string} dia - A data no formato "dd/mm/yyyy".
    */
   obterEstoqueDoDia(dia) {
-    const response = EstoqueRequests.relatorioEstoqueDoDia(
+    const data = EstoqueRequests.relatorioEstoqueDoDia(
       dia,
       this.TINYSESSID
     );
 
-    const { data } = response;
     return { registros: data.response[0].val.registros, dia };
   }
 
@@ -56,13 +55,12 @@ class EstoqueManager {
    * @param {string} diaFim - A data no formato "dd/mm/yyyy".
    */
   obterRelatorioSaidasEntradas(diaInicio, diaFim) {
-    const response = EstoqueRequests.relatorioSaidasEntradas(
+    const data = EstoqueRequests.relatorioSaidasEntradas(
       diaInicio,
       diaFim,
       this.TINYSESSID
     );
 
-    const { data } = response;
     return { registros: data.response[0].val.registros };
   }
 
