@@ -1,99 +1,12 @@
-import { AuthRequests } from "./requests/Auth";
+// estoqueManager.ts
+
 import { EstoqueRequests } from "./requests/Estoque";
-import sqlite3 from "sqlite3";
 import { format } from "date-fns";
-import writeJsonFile from "./utils/writeJsonFile";
 
-export class Tiny {
-  TINYSESSID: string = "";
+export class EstoqueManager {
+  constructor(private TINYSESSID: string) {}
 
-  constructor(public userEmail: string, public userPassword: string) {}
-
-  async loadTINYSESSIDFromDatabase() {
-    return new Promise((resolve) => {
-      const db = new sqlite3.Database("temp/tiny.db");
-
-      db.serialize(() => {
-        db.get(
-          "SELECT TINYSESSID FROM session ORDER BY rowid DESC LIMIT 1",
-          (err, row: any) => {
-            if (!err && row) {
-              this.TINYSESSID = row.TINYSESSID;
-            }
-            resolve(true);
-          }
-        );
-      });
-
-      db.close();
-    });
-  }
-
-  private async saveTINYSESSIDToDatabase() {
-    const db = new sqlite3.Database("temp/tiny.db");
-
-    db.serialize(() => {
-      db.run("CREATE TABLE IF NOT EXISTS session (TINYSESSID TEXT)");
-      const stmt = db.prepare("INSERT INTO session VALUES (?)");
-      stmt.run(this.TINYSESSID);
-      stmt.finalize();
-    });
-
-    db.close();
-  }
-
-  async login() {
-    try {
-      if (this.TINYSESSID) {
-        const isAuth = await AuthRequests.verifyTINYSESSID(this.TINYSESSID);
-        console.log({ isAuth });
-        if (isAuth) return;
-      }
-
-      const email = this.userEmail;
-      const password = this.userPassword;
-
-      const response = await AuthRequests.initLogin({ email, password });
-
-      // This cookie is temporary, after finish login that will be invalid.
-      let regexExec: any = /TINYSESSID=(?<TINYSESSID>.+?);/g.exec(
-        (response.headers["set-cookie"] as string[]).find((v) =>
-          v.includes("TINYSESSID")
-        ) as string
-      );
-      const TINYSESSID_TEMP = regexExec.groups["TINYSESSID"];
-
-      const { idUsuario, uidLogin } = response.data.response[0].val;
-
-      const finalizeResponse = await AuthRequests.finishLogin({
-        uidLogin,
-        idUsuario,
-        TINYSESSID: TINYSESSID_TEMP,
-      });
-
-      // Here I catch the final TINYSESSID
-      regexExec = /TINYSESSID=(?<TINYSESSID>.+?);/g.exec(
-        (finalizeResponse.headers["set-cookie"] as string[]).find((v) =>
-          v.includes("TINYSESSID")
-        ) as string
-      );
-      this.TINYSESSID = regexExec.groups["TINYSESSID"];
-
-      this.saveTINYSESSIDToDatabase();
-
-      return this.TINYSESSID;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  /**
-   *
-   * @param dia dd/mm/yyyy
-   */
-  async obterEstoqueDoDia(
-    dia: string
-  ): Promise<{ registros: any; dia: string }> {
+  async obterEstoqueDoDia(dia: string) {
     const response = await EstoqueRequests.relatorioEstoqueDoDia(
       dia,
       this.TINYSESSID
@@ -103,7 +16,7 @@ export class Tiny {
     return { registros: data.response[0].val.registros, dia };
   }
 
-  async obterEstoquesPorPeriodo(periodo: number): Promise<any[]> {
+  async obterEstoquesPorPeriodo(periodo: number) {
     const estoques = [];
 
     const hoje = new Date();
@@ -130,10 +43,6 @@ export class Tiny {
     return { registros: data.response[0].val.registros };
   }
 
-  /**
-   *
-   * @param periodoEmMeses Para filtrar de 1 a 3 meses
-   */
   async obterGiroConsiderandoEstoque(periodoEmMeses: 1 | 2 | 3) {
     const hoje = new Date();
     const ultimoDiaMesAtual = new Date(
@@ -173,7 +82,7 @@ export class Tiny {
       relatorioSaidasEntradas.registros
     ).map((item: any) => {
       const diasNoEstoque = estoquesPorPeriodo.filter(
-        (v) =>
+        (v: any) =>
           v.registros.find((i: any) => i.idProduto == item.idProduto)
             .quantidade > 0
       ).length;
