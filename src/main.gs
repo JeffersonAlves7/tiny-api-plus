@@ -1,5 +1,8 @@
 // @ts-check
 
+/// <reference path="authManager.gs"/>
+/// <reference path="estoqueManager.gs"/>
+
 function main() {
   const authManager = new AuthManager();
   authManager.loadTINYSESSIDFromScriptProperties();
@@ -14,4 +17,7 @@ function main() {
   }
 
   authManager.login(email, password);
+  const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
+  const retorno = estoqueManager.obterGiroConsiderandoEstoque(2);
+  console.log(JSON.stringify({ retorno }, null, 2));
 }
