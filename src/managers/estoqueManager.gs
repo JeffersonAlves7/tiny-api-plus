@@ -1,8 +1,12 @@
 //@ts-check
 
-/// <reference path="utils.gs"/>
-/// <reference path="estoqueRequests.gs"/>
+/// <reference path="../utils.gs"/>
+/// <reference path="../requests/estoqueRequests.gs"/>
 
+/**
+ * Estoque Manager
+ * @class
+ */
 class EstoqueManager {
   /**
    * @param {string} TINYSESSID
@@ -20,10 +24,7 @@ class EstoqueManager {
    * @param {string} dia - A data no formato "dd/mm/yyyy".
    */
   obterEstoqueDoDia(dia) {
-    const data = EstoqueRequests.relatorioEstoqueDoDia(
-      dia,
-      this.TINYSESSID
-    );
+    const data = EstoqueRequests.relatorioEstoqueDoDia(dia, this.TINYSESSID);
 
     return { registros: data.response[0].val.registros, dia };
   }
@@ -47,7 +48,6 @@ class EstoqueManager {
 
     return estoques;
   }
-
 
   /**
    * Obtém o relatório de saidas e entradas do estoque para um periodo com inicio e fim.

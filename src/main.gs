@@ -1,7 +1,7 @@
 // @ts-check
 
-/// <reference path="authManager.gs"/>
-/// <reference path="estoqueManager.gs"/>
+/// <reference path="managers/authManager.gs"/>
+/// <reference path="managers/estoqueManager.gs"/>
 
 function main() {
   const authManager = new AuthManager();
@@ -12,7 +12,7 @@ function main() {
   const email = scriptProperties.getProperty("USER_EMAIL") || "";
   const password = scriptProperties.getProperty("USER_PASSWORD") || "";
 
-  if(!email || !password){
+  if (!email || !password) {
     throw new Error("Cannot find User's email address and User's password");
   }
 
