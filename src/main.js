@@ -9,36 +9,36 @@ import { getEnv } from "./utils/envUtils.js";
 /**
  * @class
  */
-class AppManager{
+class AppManager {
+  /**
+   *
+   * @param {AuthManager} authManager
+   */
+  constructor(authManager) {
     /**
-     * 
-     * @param {AuthManager} authManager 
+     * @private
      */
-    constructor(authManager) {
-        /**
-         * @private
-         */
-        this.authManager = authManager;
-    }
+    this.authManager = authManager;
+  }
 
-    async login(){
-        await this.authManager.loadTINYSESSIDFromDatabase();
-        await this.authManager.login(
-            getEnv("USER_EMAIL"),
-            getEnv("USER_PASSWORD"),
-        );
-    }
+  async login() {
+    await this.authManager.loadTINYSESSIDFromDatabase();
+    await this.authManager.login(getEnv("USER_EMAIL"), getEnv("USER_PASSWORD"));
+  }
 }
 
-async function main(){
-    // Get the product id, descricao, marca
-    const authManager = new AuthManager();
-    const appManager = new AppManager(authManager);
+async function main() {
+  // Get the product id, descricao, marca
+  const authManager = new AuthManager();
+  const appManager = new AppManager(authManager);
 
-    await appManager.login();
+  await appManager.login();
 
-    // Get the product id, descricao, marca
-    const produtos = await EstoqueRequests.obterPacoteDadosImpressao(authManager.getTINYSESSID(), 0);
-    console.log(JSON.stringify(produtos, null, 2));
+  // Get the product id, descricao, marca
+  const produtos = await EstoqueRequests.obterPacoteDadosImpressao(
+    authManager.getTINYSESSID(),
+    0
+  );
+  console.log(JSON.stringify(produtos, null, 2));
 }
-main()
+main();
