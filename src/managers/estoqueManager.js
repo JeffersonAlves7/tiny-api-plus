@@ -1,7 +1,7 @@
 //@ts-check
 
-/// <reference path="../utils.gs"/>
-/// <reference path="../requests/estoqueRequests.gs"/>
+/// <reference path="../utils.js"/>
+/// <reference path="../requests/estoqueRequests.js"/>
 
 /**
  * Estoque Manager
