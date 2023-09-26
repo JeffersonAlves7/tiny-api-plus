@@ -1,7 +1,7 @@
 // @ts-check
 
-/// <reference path="managers/authManager.gs"/>
-/// <reference path="managers/estoqueManager.gs"/>
+/// <reference path="managers/authManager.js"/>
+/// <reference path="managers/estoqueManager.js"/>
 
 function main() {
   const authManager = new AuthManager();

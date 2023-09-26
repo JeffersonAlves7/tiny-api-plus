@@ -1,6 +1,6 @@
 //@ts-check
 
-/// <reference path="../requests/authRequests.gs"/>
+/// <reference path="../requests/authRequests.js"/>
 
 /**
  * Authentication manager.
