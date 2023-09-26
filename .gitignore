@@ -4,3 +4,4 @@ temp/
 package-lock.json
 dist/
 .vscode
+*.sqlite3

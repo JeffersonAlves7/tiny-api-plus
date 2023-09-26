@@ -36,7 +36,7 @@ export class AuthRequests {
       }
     );
 
-    const headers = response.headers.raw(); // Obter todos os headers da resposta
+    const headers = response.headers; // Obter todos os headers da resposta
     const responseData = await response.json();
 
     return { headers, data: responseData };
@@ -67,7 +67,7 @@ export class AuthRequests {
       }
     );
 
-    const headers = response.headers.raw(); // Obter todos os headers da resposta
+    const headers = response.headers; // Obter todos os headers da resposta
     const responseData = await response.json();
 
     return { headers, data: responseData };

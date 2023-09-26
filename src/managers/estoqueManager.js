@@ -1,7 +1,7 @@
 //@ts-check
 
-import { EstoqueRequests } from "../requests/estoqueRequests";
-import { formatarData } from "../utils/dateUtils";
+import { EstoqueRequests } from "../requests/estoqueRequests.js";
+import { formatarData } from "../utils/dateUtils.js";
 
 /**
  * Estoque Manager

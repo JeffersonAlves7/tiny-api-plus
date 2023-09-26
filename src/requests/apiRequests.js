@@ -1,6 +1,6 @@
 // @ts-check
 
-import { getEnv } from "../utils/envUtils";
+import { getEnv } from "../utils/envUtils.js";
 
 export class ApiRequests {
   constructor() {

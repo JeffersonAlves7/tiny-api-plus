@@ -1,12 +1,12 @@
 //@ts-check
 import sqlite3 from "sqlite3";
-import { AuthRequests } from "../requests/authRequests";
+import { AuthRequests } from "../requests/authRequests.js";
 
 /**
  * Authentication manager.
  * @class
  */
-class AuthManager {
+export class AuthManager {
   /**
    * Create an AuthManager instance.
    */
@@ -31,7 +31,7 @@ class AuthManager {
         console.log("Connected to the database.");
         // select the TINYSESSID from the table
         db.get(`SELECT TINYSESSID FROM tinySession`, (err, row) => {
-          if (err) reject(err);
+          if (err) resolve(err);
           // if the TINYSESSID exists, load it
           if (row) {
             this.TINYSESSID = row.TINYSESSID;
@@ -101,9 +101,7 @@ class AuthManager {
       });
 
       // This cookie is temporary; it will be invalid after finishing login.
-      const cookies = response.headers["Set-Cookie"];
-      const TINYSESSID_TEMP = this.extractTINYSESSID(cookies);
-      console.log({ TINYSESSID_TEMP });
+      const TINYSESSID_TEMP = this.extractTINYSESSID(response.headers.get("set-cookie") || "");
       if (!TINYSESSID_TEMP) throw new Error("Cannot find a TINYSESSID_TEMP");
 
       const { idUsuario, uidLogin } = response.data.response[0].val;
@@ -115,9 +113,9 @@ class AuthManager {
       });
 
       // Here I catch the final TINYSESSID
-      const finalizeCookies = finalizeResponse.headers["Set-Cookie"];
-
-      const TINYSESSID = this.extractTINYSESSID(finalizeCookies);
+      const TINYSESSID = this.extractTINYSESSID(
+        finalizeResponse.headers.get("set-cookie") || ""
+      );
       console.log({ TINYSESSID });
       if (!TINYSESSID) throw new Error("Cannot find a TINYSESSID_TEMP");
 
@@ -142,13 +140,12 @@ class AuthManager {
 
   /**
    * Extract TINYSESSID from an array of cookies.
-   * @param {string[]} cookies - An array of cookies.
+   * @param {string} setCookie - An array of cookies.
    * @returns {string|null} - The TINYSESSID if found, otherwise null.
    * @private
    */
-  extractTINYSESSID(cookies) {
-    const cookieString = cookies.join(";");
-    const regexExec = /TINYSESSID=(.+?);/g.exec(cookieString);
+  extractTINYSESSID(setCookie) {
+    const regexExec = /TINYSESSID=(.+?);/g.exec(setCookie)
     return regexExec ? regexExec[1] : null;
   }
 }
