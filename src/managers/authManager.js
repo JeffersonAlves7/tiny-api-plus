@@ -70,7 +70,7 @@ export class AuthManager {
               function (err) {
                 if (err) reject(err);
                 console.log(
-                  `A row has been inserted with rowid ${this.lastID}`
+                  `A row has been inserted with row id ${this.lastID}`
                 );
                 resolve(true);
               }
@@ -101,7 +101,9 @@ export class AuthManager {
       });
 
       // This cookie is temporary; it will be invalid after finishing login.
-      const TINYSESSID_TEMP = this.extractTINYSESSID(response.headers.get("set-cookie") || "");
+      const TINYSESSID_TEMP = this.extractTINYSESSID(
+        response.headers.get("set-cookie") || ""
+      );
       if (!TINYSESSID_TEMP) throw new Error("Cannot find a TINYSESSID_TEMP");
 
       const { idUsuario, uidLogin } = response.data.response[0].val;
@@ -145,7 +147,7 @@ export class AuthManager {
    * @private
    */
   extractTINYSESSID(setCookie) {
-    const regexExec = /TINYSESSID=(.+?);/g.exec(setCookie)
+    const regexExec = /TINYSESSID=(.+?);/g.exec(setCookie);
     return regexExec ? regexExec[1] : null;
   }
 }

@@ -109,30 +109,33 @@ export class EstoqueRequests {
    * @param {number} page - O TINYSESSID da sessão.
    * @returns {Promise<any>} - A resposta da requisição.
    */
-  static async obterPacoteDadosImpressao(TINYSESSID, page){
-    const payload = {
-      type: "1",
-      func: "obterPacoteDadosImpressao",
-      duplicidade: "0",
-      args: `[{"criterio":"opc-ativo","pesquisa":"","idTag":"0","pagina":${page},"tipo":"","tipoCadastroProduto":"P","classeProduto":"","codigoProduto":"","idCategoria":"0","tipoOrdenacao":"","idEcommerce":"-1","parametroImpressao":"N","idFornecedorFiltro":"0","dataAtualizacaoKitPsq":"","dataAtualizacaoProdutoPsq":""}]`,
-    };
+  static async obterPacoteDadosImpressao(TINYSESSID, page) {
+    var myHeaders = new Headers();
+    myHeaders.append(
+      "content-type",
+      "application/x-www-form-urlencoded; charset=UTF-8"
+    );
+    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};` );
+    myHeaders.append("x-custom-request-for", "XAJAX");
 
-    const config = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        Cookie: `TINYSESSID=${TINYSESSID};`,
-        "X-Custom-Request-For": "XAJAX",
-      },
-      body: new URLSearchParams(payload).toString(),
-    };
-
-    const response = await fetch(
-      "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
-      config
+    var urlencoded = new URLSearchParams();
+    urlencoded.append("type", "1");
+    urlencoded.append("func", "obterPacoteDadosImpressao");
+    urlencoded.append(
+      "args",
+      `[{"criterio":"opc-ativo","pesquisa":"","idTag":"0","pagina":${page},"tipo":"","tipoCadastroProduto":"P","classeProduto":"","codigoProduto":"","idCategoria":"0","tipoOrdenacao":"","idEcommerce":"-1","parametroImpressao":"N","idFornecedorFiltro":"0","dataAtualizacaoKitPsq":"","dataAtualizacaoProdutoPsq":""}]`
     );
 
-    const data = await response.json();
-    return data;
+    const response = await fetch(
+      "https://erp.tiny.com.br/services/produtos.server.php",
+      {
+        method: "POST",
+        headers: myHeaders,
+        body: urlencoded,
+        redirect: "follow",
+      }
+    )
+
+    return response.json()
   }
 }

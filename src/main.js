@@ -1,8 +1,7 @@
 // @ts-check
 
 import { AuthManager } from "./managers/authManager.js";
-import { ApiRequests } from "./requests/apiRequests.js";
-import { EstoqueRequests } from "./requests/estoqueRequests.js";
+import { EstoqueManager } from "./managers/estoqueManager.js";
 import { getEnv } from "./utils/envUtils.js";
 
 // Create a AppManager to manage all the application
@@ -34,11 +33,16 @@ async function main() {
 
   await appManager.login();
 
+  const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
+
   // Get the product id, descricao, marca
-  const produtos = await EstoqueRequests.obterPacoteDadosImpressao(
-    authManager.getTINYSESSID(),
-    0
-  );
-  console.log(JSON.stringify(produtos, null, 2));
+  //   const teste = await EstoqueRequests.relatorioEstoqueDoDia(
+  //     "10/04/2023",
+  //     authManager.getTINYSESSID(),
+  //   );
+  //   console.log(JSON.stringify(teste, null, 2));
+
+  const produtos = await estoqueManager.getAllPagesFromObterPacoteDadosImpressao();
+  console.log({produtos})
 }
 main();

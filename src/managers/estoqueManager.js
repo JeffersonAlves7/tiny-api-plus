@@ -7,7 +7,7 @@ import { formatarData } from "../utils/dateUtils.js";
  * Estoque Manager
  * @class
  */
-class EstoqueManager {
+export class EstoqueManager {
   /**
    * @param {string} TINYSESSID
    */
@@ -127,5 +127,51 @@ class EstoqueManager {
     console.log({ relatorioPorItem });
 
     return relatorioPorItem;
+  }
+
+  // get all pages from obterPacoteDadosImpressao, the last page will return a empty array
+  async getAllPagesFromObterPacoteDadosImpressao() {
+    const products = [];
+
+    for (let i = 0; true; i++) {
+      const produtosResponse = await EstoqueRequests.obterPacoteDadosImpressao(
+        this.TINYSESSID,
+        i
+      );
+
+      const searchValue = /retornoPacote\((.*)\)/g.exec(
+        produtosResponse.response[0].src
+      );
+
+      if (searchValue) {
+        const productsValue = JSON.parse(searchValue[1]);
+        if (productsValue.length == 0) return products;
+
+        products.push(...productsValue)
+      }
+    }
+  }
+
+  /**
+   *
+   * @param {number} page
+   * @returns
+   */
+  async getPageFromObterPacoteDadosImpressao(page) {
+    const produtosResponse = await EstoqueRequests.obterPacoteDadosImpressao(
+      this.TINYSESSID,
+      page
+    );
+
+    const searchValue = /retornoPacote\((.*)\)/g.exec(
+      produtosResponse.response[0].src
+    );
+
+    if (searchValue) {
+      const productsValue = JSON.parse(searchValue[1]);
+      if (productsValue.length < 0) return productsValue;
+
+      return productsValue;
+    }
   }
 }
