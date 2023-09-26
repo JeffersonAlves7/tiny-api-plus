@@ -1,7 +1,6 @@
 //@ts-check
-
-/// <reference path="../requests/authRequests.js"/>
-
+import sqlite3 from "sqlite3";
+import { AuthRequests } from "../requests/authRequests";
 
 /**
  * Authentication manager.
@@ -19,40 +18,84 @@ class AuthManager {
     this.TINYSESSID = "";
   }
 
+  // create a function to load the TINYSESSID from sqlite3 if exists
   /**
-   * Load the TINYSESSID from script properties, if available.
-   * @returns {void}
+   *
+   * @returns {Promise<any>}
    */
-  loadTINYSESSIDFromScriptProperties() {
-    const scriptProperties = PropertiesService.getScriptProperties();
-    this.TINYSESSID = scriptProperties.getProperty("TINYSESSID") || "";
+  async loadTINYSESSIDFromDatabase() {
+    return new Promise((resolve, reject) => {
+      // create a database connection
+      const db = new sqlite3.Database("./database.sqlite3", (err) => {
+        if (err) reject(err);
+        console.log("Connected to the database.");
+        // select the TINYSESSID from the table
+        db.get(`SELECT TINYSESSID FROM tinySession`, (err, row) => {
+          if (err) reject(err);
+          // if the TINYSESSID exists, load it
+          if (row) {
+            this.TINYSESSID = row.TINYSESSID;
+            resolve(true);
+          }
+        });
+      });
+    });
   }
 
+  // save the TINYSESSID inside a table of sqlite3
   /**
-   * Save the TINYSESSID to script properties.
-   * @private
-   * @returns {void}
+   *
+   * @returns {Promise<any>}
    */
-  saveTINYSESSIDToScriptProperties() {
-    const scriptProperties = PropertiesService.getScriptProperties();
-    scriptProperties.setProperty("TINYSESSID", this.TINYSESSID);
+  saveTINYSESSIDToDatabase() {
+    return new Promise((resolve, reject) => {
+      const db = new sqlite3.Database("./database.sqlite3", (err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log("Connected to the database.");
+        // create a table to store the TINYSESSID
+        db.run(
+          `CREATE TABLE IF NOT EXISTS tinySession (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        TINYSESSID text NOT NULL
+      );`,
+          (err) => {
+            if (err) reject(err);
+            console.log("Table created.");
+            // insert the TINYSESSID into the table, if it already exists, overwrite the value
+            db.run(
+              `INSERT OR REPLACE INTO tinySession(id, TINYSESSID) VALUES(1, ?)`,
+              [this.TINYSESSID],
+              function (err) {
+                if (err) reject(err);
+                console.log(
+                  `A row has been inserted with rowid ${this.lastID}`
+                );
+                resolve(true);
+              }
+            );
+          }
+        );
+      });
+    });
   }
 
   /**
    * Perform user login.
    * @param {string} userEmail - User's email address.
    * @param {string} userPassword - User's password.
-   * @returns {string|null} - The TINYSESSID if login is successful, otherwise null.
+   * @returns {Promise<string|null>} - The TINYSESSID if login is successful, otherwise null.
    */
-  login(userEmail, userPassword) {
+  async login(userEmail, userPassword) {
     try {
       if (this.TINYSESSID && this.TINYSESSID != "0") {
-        const isAuth = AuthRequests.verifyTINYSESSID(this.TINYSESSID);
+        const isAuth = await AuthRequests.verifyTINYSESSID(this.TINYSESSID);
         console.log({ isAuth });
         if (isAuth) return this.TINYSESSID;
       }
 
-      const response = AuthRequests.initLogin({
+      const response = await AuthRequests.initLogin({
         email: userEmail,
         password: userPassword,
       });
@@ -65,7 +108,7 @@ class AuthManager {
 
       const { idUsuario, uidLogin } = response.data.response[0].val;
 
-      const finalizeResponse = AuthRequests.finishLogin({
+      const finalizeResponse = await AuthRequests.finishLogin({
         uidLogin,
         idUsuario,
         TINYSESSID: TINYSESSID_TEMP,
@@ -80,7 +123,7 @@ class AuthManager {
 
       this.TINYSESSID = TINYSESSID;
 
-      this.saveTINYSESSIDToScriptProperties();
+      this.saveTINYSESSIDToDatabase().catch(console.error);
 
       return this.TINYSESSID;
     } catch (e) {

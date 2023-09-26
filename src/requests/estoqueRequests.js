@@ -1,17 +1,17 @@
-//@ts-check
+// @ts-check
 
 /**
  * Classe para fazer requisições relacionadas ao estoque.
  * @class
  */
-class EstoqueRequests {
+export class EstoqueRequests {
   /**
    * Obtém o relatório de estoque para um dia específico ou a quantidade páginas.
    * @param {string} dia - A data no formato "dd/mm/yyyy".
    * @param {string} TINYSESSID - O TINYSESSID da sessão.
-   * @returns {any} - A resposta da requisição.
+   * @returns {Promise<any>} - A resposta da requisição.
    */
-  static relatorioEstoqueDoDia(dia, TINYSESSID) {
+  static async relatorioEstoqueDoDia(dia, TINYSESSID) {
     const payload = {
       type: "1",
       func: "obterDadosRelatorioSaldos",
@@ -19,25 +19,22 @@ class EstoqueRequests {
       args: `[{"data":"${dia}","slot_tags":[],"idFornecedor":"0","idDeposito":"0","ignorarParametroDesconsiderarSaldo":false,"filtroEstoque":"T","idCategoria":"","slot_variacoes":[],"exibirProdutosSobEncomenda":false,"exibirEstoqueDisponivel":false,"filtroAgrupar":"0"}]`,
     };
 
-    /** @type {GoogleAppsScript.URL_Fetch.URLFetchRequestOptions} */
     const config = {
-      method: "post",
-      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      method: "POST",
       headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         Cookie: `TINYSESSID=${TINYSESSID};`,
         "X-Custom-Request-For": "XAJAX",
       },
-      payload: `type=${payload.type}&func=${payload.func}&duplicidade=${
-        payload.duplicidade
-      }&args=${encodeURIComponent(payload.args)}`,
+      body: new URLSearchParams(payload).toString(),
     };
 
-    const response = UrlFetchApp.fetch(
+    const response = await fetch(
       "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
       config
     );
 
-    return JSON.parse(response.getContentText());
+    return await response.json();
   }
 
   /**
@@ -45,9 +42,9 @@ class EstoqueRequests {
    * @param {number} page - A página atual".
    * @param {number} maxPages - A página máxima".
    * @param {string} TINYSESSID - O TINYSESSID da sessão.
-   * @returns {any} - A resposta da requisição.
+   * @returns {Promise<any>} - A resposta da requisição.
    */
-  static obterPacoteRelatorioSaldos(page, maxPages, TINYSESSID) {
+  static async obterPacoteRelatorioSaldos(page, maxPages, TINYSESSID) {
     const payload = {
       type: "1",
       func: "obterDadosRelatorioSaldos",
@@ -55,25 +52,22 @@ class EstoqueRequests {
       args: `[${page}, ${maxPages}]`,
     };
 
-    /** @type {GoogleAppsScript.URL_Fetch.URLFetchRequestOptions} */
     const config = {
-      method: "post",
-      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      method: "POST",
       headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         Cookie: `TINYSESSID=${TINYSESSID};`,
         "X-Custom-Request-For": "XAJAX",
       },
-      payload: `type=${payload.type}&func=${payload.func}&duplicidade=${
-        payload.duplicidade
-      }&args=${encodeURIComponent(payload.args)}`,
+      body: new URLSearchParams(payload).toString(),
     };
 
-    const response = UrlFetchApp.fetch(
+    const response = await fetch(
       "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
       config
     );
 
-    return JSON.parse(response.getContentText());
+    return await response.json();
   }
 
   /**
@@ -81,9 +75,9 @@ class EstoqueRequests {
    * @param {string} diaInicio - A data de início no formato "dd/mm/yyyy".
    * @param {string} diaFim - A data de fim no formato "dd/mm/yyyy".
    * @param {string} TINYSESSID - O TINYSESSID da sessão.
-   * @returns {any} - A resposta da requisição.
+   * @returns {Promise<any>} - A resposta da requisição.
    */
-  static relatorioSaidasEntradas(diaInicio, diaFim, TINYSESSID) {
+  static async relatorioSaidasEntradas(diaInicio, diaFim, TINYSESSID) {
     const payload = {
       type: "1",
       func: "obterDadosRelatorioEntradasSaidas",
@@ -91,25 +85,21 @@ class EstoqueRequests {
       args: `["${diaInicio}","${diaFim}","",false,null,"","","N"]`,
     };
 
-    /** @type {GoogleAppsScript.URL_Fetch.URLFetchRequestOptions} */
     const config = {
-      method: "post",
-      contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+      method: "POST",
       headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
         Cookie: `TINYSESSID=${TINYSESSID};`,
         "X-Custom-Request-For": "XAJAX",
       },
-      payload: `type=${payload.type}&func=${payload.func}&duplicidade=${
-        payload.duplicidade
-      }&args=${encodeURIComponent(payload.args)}`,
+      body: new URLSearchParams(payload).toString(),
     };
 
-    const response = UrlFetchApp.fetch(
+    const response = await fetch(
       "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
       config
     );
 
-    return JSON.parse(response.getContentText());
+    return await response.json();
   }
-
 }

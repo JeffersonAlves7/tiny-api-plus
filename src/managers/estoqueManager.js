@@ -1,7 +1,7 @@
 //@ts-check
 
-/// <reference path="../utils.js"/>
-/// <reference path="../requests/estoqueRequests.js"/>
+import { EstoqueRequests } from "../requests/estoqueRequests";
+import { formatarData } from "../utils/dateUtils";
 
 /**
  * Estoque Manager
@@ -23,8 +23,11 @@ class EstoqueManager {
    * Obtém o relatório de estoque para um dia específico.
    * @param {string} dia - A data no formato "dd/mm/yyyy".
    */
-  obterEstoqueDoDia(dia) {
-    const data = EstoqueRequests.relatorioEstoqueDoDia(dia, this.TINYSESSID);
+  async obterEstoqueDoDia(dia) {
+    const data = await EstoqueRequests.relatorioEstoqueDoDia(
+      dia,
+      this.TINYSESSID
+    );
 
     return { registros: data.response[0].val.registros, dia };
   }
@@ -33,13 +36,13 @@ class EstoqueManager {
    * Obtém o relatório de estoque para um periodo em dias.
    * @param {number} periodo - O periodo em quantidade de dias.
    */
-  obterEstoquesPorPeriodo(periodo) {
+  async obterEstoquesPorPeriodo(periodo) {
     const estoques = [];
 
     const hoje = new Date();
     for (let i = 0; i < periodo; i++) {
       const data = formatarData(hoje);
-      const estoqueDoDia = this.obterEstoqueDoDia(data);
+      const estoqueDoDia = await this.obterEstoqueDoDia(data);
       estoques.push(estoqueDoDia);
 
       // Subtrai um dia da data atual para obter a data do dia anterior
@@ -54,8 +57,8 @@ class EstoqueManager {
    * @param {string} diaInicio - A data no formato "dd/mm/yyyy".
    * @param {string} diaFim - A data no formato "dd/mm/yyyy".
    */
-  obterRelatorioSaidasEntradas(diaInicio, diaFim) {
-    const data = EstoqueRequests.relatorioSaidasEntradas(
+  async obterRelatorioSaidasEntradas(diaInicio, diaFim) {
+    const data = await EstoqueRequests.relatorioSaidasEntradas(
       diaInicio,
       diaFim,
       this.TINYSESSID
@@ -68,7 +71,7 @@ class EstoqueManager {
    * Obtém o relatório de giro considerando estoque para um periodo em meses.
    * @param {1 | 2 | 3} periodoEmMeses - A data no formato "dd/mm/yyyy".
    */
-  obterGiroConsiderandoEstoque(periodoEmMeses) {
+  async obterGiroConsiderandoEstoque(periodoEmMeses) {
     const hoje = new Date();
     const ultimoDiaMesAtual = new Date(
       hoje.getFullYear(),
@@ -88,13 +91,15 @@ class EstoqueManager {
       ) + 1;
 
     // Agora você pode usar a quantidade de dias para obter o estoque
-    const estoquesPorPeriodo = this.obterEstoquesPorPeriodo(quantidadeDias);
+    const estoquesPorPeriodo = await this.obterEstoquesPorPeriodo(
+      quantidadeDias
+    );
 
     // Para a data de início e data fim do relatório de saídas/entradas
     const dataInicio = formatarData(primeiroDiaPeriodo);
     const dataFim = formatarData(ultimoDiaMesAtual);
 
-    const relatorioSaidasEntradas = this.obterRelatorioSaidasEntradas(
+    const relatorioSaidasEntradas = await this.obterRelatorioSaidasEntradas(
       dataInicio,
       dataFim
     );

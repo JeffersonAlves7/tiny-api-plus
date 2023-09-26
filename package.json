@@ -1,22 +1,28 @@
 {
-  "name": "tiny-api-extension",
+  "name": "tiny-api-plus",
   "version": "1.0.0",
   "description": "",
-  "main": "request-login.js",
-  "type": "commonjs",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "push": "clasp push"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeffersonAlves7/tiny-api-plus.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "ts-node": "^10.9.1"
+  "bugs": {
+    "url": "https://github.com/JeffersonAlves7/tiny-api-plus/issues"
   },
+  "homepage": "https://github.com/JeffersonAlves7/tiny-api-plus#readme",
   "devDependencies": {
-    "@google/clasp": "^2.4.2",
-    "@types/google-apps-script": "^1.0.69",
-    "typescript": "^5.2.2"
+    "@types/node": "^20.7.0",
+    "@types/sqlite3": "^3.1.9"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "sqlite3": "^5.1.6"
   }
 }
