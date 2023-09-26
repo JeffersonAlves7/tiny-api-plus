@@ -3,6 +3,7 @@
 import { AuthManager } from "./managers/authManager.js";
 import { EstoqueManager } from "./managers/estoqueManager.js";
 import { getEnv } from "./utils/envUtils.js";
+import fs from "fs"
 
 // Create a AppManager to manage all the application
 /**
@@ -34,15 +35,14 @@ async function main() {
   await appManager.login();
 
   const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
+  // const produtos = await estoqueManager.getAllPagesFromObterPacoteDadosImpressao();
+  // console.log({produtos})
+  const produtosLoja1 = await estoqueManager.getAllPagesFromObterPacoteDadosImpressaoEstoque("Loja 1");
+  console.log({produtos: produtosLoja1})
+  fs.writeFileSync('produtosLoja1.json', JSON.stringify(produtosLoja1, null, 2))
 
-  // Get the product id, descricao, marca
-  //   const teste = await EstoqueRequests.relatorioEstoqueDoDia(
-  //     "10/04/2023",
-  //     authManager.getTINYSESSID(),
-  //   );
-  //   console.log(JSON.stringify(teste, null, 2));
-
-  const produtos = await estoqueManager.getAllPagesFromObterPacoteDadosImpressao();
-  console.log({produtos})
+  const produtosMatriz = await estoqueManager.getAllPagesFromObterPacoteDadosImpressaoEstoque("Matriz");
+  console.log({produtos: produtosMatriz})
+  fs.writeFileSync('produtosMatriz.json', JSON.stringify(produtosMatriz, null, 2))
 }
 main();

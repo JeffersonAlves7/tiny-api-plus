@@ -1,7 +1,6 @@
 //@ts-check
 
 import { EstoqueRequests } from "../requests/estoqueRequests.js";
-import { formatarData } from "../utils/dateUtils.js";
 
 /**
  * Estoque Manager
@@ -20,142 +19,48 @@ export class EstoqueManager {
   }
 
   /**
-   * Obtém o relatório de estoque para um dia específico.
-   * @param {string} dia - A data no formato "dd/mm/yyyy".
+   * @typedef {Object} ProducoPacoteDadosImpressao
+   * @property {string} id
+   * @property {string} nome
+   * @property {string} unidade
+   * @property {string} preco
+   * @property {string} precoPromocional
+   * @property {string} codigo
+   * @property {string} tipo
+   * @property {string} estoqueMinimo
+   * @property {string} precoCusto
+   * @property {string} idProdutoPai
+   * @property {string} produtoVariacaoPai
+   * @property {string} gerenciarEstoque
+   * @property {string} situacao
+   * @property {string} classeProduto
+   * @property {string} codigoNoFabricante
+   * @property {string} idMarca
+   * @property {string} marca
+   * @property {string} localizacao
+   * @property {string} cf
+   * @property {string} dataAlteracao
    */
-  async obterEstoqueDoDia(dia) {
-    const data = await EstoqueRequests.relatorioEstoqueDoDia(
-      dia,
-      this.TINYSESSID
-    );
-
-    return { registros: data.response[0].val.registros, dia };
-  }
 
   /**
-   * Obtém o relatório de estoque para um periodo em dias.
-   * @param {number} periodo - O periodo em quantidade de dias.
+   *
+   * @returns {Promise<ProducoPacoteDadosImpressao[]>}}
    */
-  async obterEstoquesPorPeriodo(periodo) {
-    const estoques = [];
-
-    const hoje = new Date();
-    for (let i = 0; i < periodo; i++) {
-      const data = formatarData(hoje);
-      const estoqueDoDia = await this.obterEstoqueDoDia(data);
-      estoques.push(estoqueDoDia);
-
-      // Subtrai um dia da data atual para obter a data do dia anterior
-      hoje.setDate(hoje.getDate() - 1);
-    }
-
-    return estoques;
-  }
-
-  /**
-   * Obtém o relatório de saidas e entradas do estoque para um periodo com inicio e fim.
-   * @param {string} diaInicio - A data no formato "dd/mm/yyyy".
-   * @param {string} diaFim - A data no formato "dd/mm/yyyy".
-   */
-  async obterRelatorioSaidasEntradas(diaInicio, diaFim) {
-    const data = await EstoqueRequests.relatorioSaidasEntradas(
-      diaInicio,
-      diaFim,
-      this.TINYSESSID
-    );
-
-    return { registros: data.response[0].val.registros };
-  }
-
-  /**
-   * Obtém o relatório de giro considerando estoque para um periodo em meses.
-   * @param {1 | 2 | 3} periodoEmMeses - A data no formato "dd/mm/yyyy".
-   */
-  async obterGiroConsiderandoEstoque(periodoEmMeses) {
-    const hoje = new Date();
-    const ultimoDiaMesAtual = new Date(
-      hoje.getFullYear(),
-      hoje.getMonth() + 1,
-      0
-    );
-
-    // Calcular o primeiro dia do primeiro mês do período
-    const primeiroDiaPeriodo = new Date(hoje);
-    primeiroDiaPeriodo.setDate(1);
-    primeiroDiaPeriodo.setMonth(hoje.getMonth() - (periodoEmMeses - 1));
-
-    // Obter a quantidade de dias no período
-    const quantidadeDias =
-      Math.ceil(
-        (hoje.valueOf() - primeiroDiaPeriodo.valueOf()) / (1000 * 60 * 60 * 24)
-      ) + 1;
-
-    // Agora você pode usar a quantidade de dias para obter o estoque
-    const estoquesPorPeriodo = await this.obterEstoquesPorPeriodo(
-      quantidadeDias
-    );
-
-    // Para a data de início e data fim do relatório de saídas/entradas
-    const dataInicio = formatarData(primeiroDiaPeriodo);
-    const dataFim = formatarData(ultimoDiaMesAtual);
-
-    const relatorioSaidasEntradas = await this.obterRelatorioSaidasEntradas(
-      dataInicio,
-      dataFim
-    );
-
-    // Agora você tem os estoques por período e o relatório de saídas/entradas para o período
-    // Faça o que for necessário com esses dados
-    const relatorioPorItem = Object.values(
-      relatorioSaidasEntradas.registros
-    ).map((item) => {
-      const diasNoEstoque = estoquesPorPeriodo.filter(
-        (v) =>
-          v.registros.find((i) => i.idProduto == item.idProduto).quantidade > 0
-      ).length;
-
-      return {
-        idProduto: item.idProduto,
-        codigo: item.codigo,
-        nome: item.nome,
-        diasNoEstoque,
-        estoqueSaida: item.estoqueSaida,
-        giro: item.estoqueSaida / diasNoEstoque,
-      };
-    });
-
-    console.log({ relatorioPorItem });
-
-    return relatorioPorItem;
-  }
-
-  // get all pages from obterPacoteDadosImpressao, the last page will return a empty array
   async getAllPagesFromObterPacoteDadosImpressao() {
     const products = [];
 
     for (let i = 0; true; i++) {
-      const produtosResponse = await EstoqueRequests.obterPacoteDadosImpressao(
-        this.TINYSESSID,
-        i
-      );
+      const response = await this.getPageFromObterPacoteDadosImpressao(i);
+      if (response.length == 0) return products;
 
-      const searchValue = /retornoPacote\((.*)\)/g.exec(
-        produtosResponse.response[0].src
-      );
-
-      if (searchValue) {
-        const productsValue = JSON.parse(searchValue[1]);
-        if (productsValue.length == 0) return products;
-
-        products.push(...productsValue)
-      }
+      products.push(...response);
     }
   }
 
   /**
    *
    * @param {number} page
-   * @returns
+   * @returns {Promise<ProducoPacoteDadosImpressao[]>}}
    */
   async getPageFromObterPacoteDadosImpressao(page) {
     const produtosResponse = await EstoqueRequests.obterPacoteDadosImpressao(
@@ -169,9 +74,87 @@ export class EstoqueManager {
 
     if (searchValue) {
       const productsValue = JSON.parse(searchValue[1]);
-      if (productsValue.length < 0) return productsValue;
-
       return productsValue;
     }
+    return [];
+  }
+
+  /**
+   * @typedef {Object} ProducoPacoteDadosImpressaoEstoque
+   * @property {string} id
+   * @property {string} nome
+   * @property {string} unidade
+   * @property {string} preco
+   * @property {string} precoPromocional
+   * @property {string} precoCusto
+   * @property {string?} idLinhaProduto
+   * @property {string} codigo
+   * @property {string} localizacao
+   * @property {string} spedTipoItem
+   * @property {string} cf
+   * @property {string} classeProduto
+   * @property {string} tipo
+   * @property {string} produtoVariacaoPai
+   * @property {string} idProdutoPai
+   * @property {string} pesoBruto
+   * @property {string} pesoLiq
+   * @property {string} gerenciarEstoque
+   * @property {string} gtin
+   * @property {string} controlarLotes
+   * @property {string} idCatProd
+   * @property {string} estoque
+   */
+
+  // Obter todas as paginas de pacote dados impressao estoque
+  /**
+   *
+   * @param {'Loja 1' | 'Matriz' | 'Loja 2'} estoque
+   * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
+   */
+  async getAllPagesFromObterPacoteDadosImpressaoEstoque(estoque) {
+    const products = [];
+
+    for (let i = 0; true; i++) {
+      const { values } = await this.getPageFromObterPacoteDadosImpressaoEstoque(
+        i,
+        estoque
+      );
+      console.log({ length: values[0].length, first: values[0][0] });
+      if (values[0].length == 0) return products;
+
+      products.push(...values[0]);
+    }
+  }
+
+  /**
+   *
+   * @param {'Loja 1' | 'Matriz' | 'Loja 2'} estoque
+   * @param {number} page
+   * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
+   */
+  async getPageFromObterPacoteDadosImpressaoEstoque(page, estoque) {
+    const estoques = { 
+      'Loja 1': '497662283',
+      'Matriz': '663192122',
+      'Loja 2': '',
+    }
+
+    const produtosResponse =
+      await EstoqueRequests.obterPacoteDadosImpressaoEstoque(
+        this.TINYSESSID,
+        page,
+        estoques[estoque]
+      );
+
+    const searchValue = /retornoPacote\((.*)\)/g.exec(
+      produtosResponse.response[0].src
+    );
+
+    if (searchValue) {
+      // Fiz isso porque ele estava retornando algo assim [], {}. Dai eu fiz isso  {values: [[], {}]} e agora funcoina
+      const productsValue = JSON.parse(`{\"values\": [${searchValue[1]}]}`);
+      return productsValue;
+    }
+    return [];
   }
 }
