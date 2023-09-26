@@ -33,7 +33,7 @@ class AppManager {
       products.push(...data.retorno.produtos);
       maxPages = data.retorno.numero_paginas;
       page++;
-      break;
+      // break;
     } while (page <= maxPages);
 
     return products;
@@ -61,7 +61,7 @@ class AppManager {
       products.push(...data.retorno.produtos);
       maxPages = data.retorno.numero_paginas;
       page++;
-      break; // Remove to get more than one page
+      // break; // Remove to get more than one page
     } while (page <= maxPages);
 
     return products;
@@ -116,10 +116,9 @@ class AppManager {
       ?.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
       .clearContent();
 
-    sheet
-      ?.getRange(2, 1, products.length, 9)
-      .setValues(
-        products.map((product) => [
+    sheet?.getRange(2, 1, products.length, 7).setValues(
+      products.map((product) => {
+        return [
           product.produto.id,
           product.produto.codigo,
           product.produto.nome,
@@ -127,10 +126,9 @@ class AppManager {
           product.produto.preco_promocional,
           product.produto.preco_custo,
           product.produto.preco_custo_medio,
-          product.produto.unidade,
-          product.produto.tipoVariacao,
-        ])
-      );
+        ];
+      })
+    );
 
     return products;
   }
