@@ -111,4 +111,5 @@ class EstoqueRequests {
 
     return JSON.parse(response.getContentText());
   }
+
 }

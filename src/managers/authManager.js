@@ -2,6 +2,7 @@
 
 /// <reference path="../requests/authRequests.js"/>
 
+
 /**
  * Authentication manager.
  * @class
