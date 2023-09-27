@@ -18,7 +18,6 @@ export class AuthManager {
     this.TINYSESSID = "";
   }
 
-  // create a function to load the TINYSESSID from sqlite3 if exists
   /**
    *
    * @returns {Promise<any>}
@@ -42,7 +41,6 @@ export class AuthManager {
     });
   }
 
-  // save the TINYSESSID inside a table of sqlite3
   /**
    *
    * @returns {Promise<any>}
@@ -118,7 +116,6 @@ export class AuthManager {
       const TINYSESSID = this.extractTINYSESSID(
         finalizeResponse.headers.get("set-cookie") || ""
       );
-      console.log({ TINYSESSID });
       if (!TINYSESSID) throw new Error("Cannot find a TINYSESSID_TEMP");
 
       this.TINYSESSID = TINYSESSID;
