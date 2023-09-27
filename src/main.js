@@ -90,7 +90,7 @@ class AppManager {
    * Retorna as vendas dentro de um periodo em meses
    * @param {number} periodo - Período em meses.
    */
-  async getVendasPerPeriod(periodo) {
+  async getSalesPerPeriod(periodo) {
     const vendasManager = new VendasManager(this.authManager.getTINYSESSID());
 
     const dataPeloPeriodo = getFirstAndLastDayOfPeriod(periodo);
@@ -104,10 +104,29 @@ class AppManager {
 
     return vendas;
   }
+
+  /**
+   * 
+   * @param {number} period - Período em meses.
+   * @returns 
+   */
+  async getProductDataWithSales(period) {
+    const vendas = await this.getSalesPerPeriod(period);
+    const produtos = await this.getProductData();
+
+    return produtos.map((produto) => {
+      const venda = vendas.find((venda) => venda.codigo === produto.codigo);
+
+      return {
+        ...produto,
+        vendaLojaMatriz: venda?.quantidade ?? 0,
+      };
+    });
+  }
 }
 
 async function main() {
-  removeFetches();
+  removeFetches(); 
 
   // Get the product id, descricao, marca
   const authManager = new AuthManager();
@@ -119,7 +138,7 @@ async function main() {
   // const vendas = appManager.getVendasPerPeriod(1);
   // fs.writeFileSync("vendas.json", JSON.stringify(vendas, null, 2));
 
-  const produtos = await appManager.getProductData();
+  const produtos = await appManager.getProductDataWithSales(3);
   fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
 
   // const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());

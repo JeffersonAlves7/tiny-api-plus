@@ -117,6 +117,11 @@ export class EstoqueRequests {
       }
     );
 
-    return response.json();
+    try {
+      return response.json();
+    } catch (e) {
+      console.log(await response.text(), null, 2)
+      throw e;
+    }
   }
 }

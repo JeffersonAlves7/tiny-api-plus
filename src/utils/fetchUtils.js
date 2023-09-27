@@ -6,48 +6,53 @@ export function increaseFetch() {
   const db = new sqlite3.Database("database.sqlite3");
 
   // create the table with an count column to count the number of fetches
-  db.run(`
+  db.run(
+    `
     CREATE TABLE IF NOT EXISTS fetch (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       date TEXT,
       type TEXT
     )
-  `);
-
-  // increment the fetch count
-  db.run(`
+  `,
+    () => {
+      // increment the fetch count
+      db.run(`
     INSERT INTO fetch (date, type)
     VALUES (datetime('now'), 'product')
   `);
-
-  // close the connection
-  db.close();
+      // close the connection
+      db.close();
+    }
+  );
 }
 
 export async function numberOfFetchs() {
   // create a new table to count the fetch if not exists
   const db = new sqlite3.Database("database.sqlite3");
 
-  // create the table with an count column to count the number of fetches
-  db.run(`
+  // select the count of fetches and return as a promise
+  return new Promise((resolve, reject) => {
+    // create the table with an count column to count the number of fetches
+    db.run(
+      `
     CREATE TABLE IF NOT EXISTS fetch (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       date TEXT,
       type TEXT
     )
-  `);
-
-  // select the count of fetches and return as a promise
-  return new Promise((resolve, reject) => {
-    db.get(
-      `
+  `,
+      () => {
+        db.get(
+          `
       SELECT COUNT(*) as count
       FROM fetch
       WHERE type = 'product'
     `,
-      (err, row) => {
-        if (err) reject(err);
-        resolve(row.count);
+          (err, row) => {
+            if (err) reject(err);
+            resolve(row.count);
+          }
+        );
       }
     );
   });
