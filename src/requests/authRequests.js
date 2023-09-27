@@ -107,27 +107,3 @@ export class AuthRequests {
     }
   }
 }
-
-// // Exemplo de uso:
-// async function testAuth() {
-//   const userData = {
-//     email: "seu-email@example.com",
-//     password: "sua-senha",
-//   };
-
-//   const loginData = await AuthRequests.initLogin(userData);
-//   console.log("Login Data:", loginData);
-
-//   if (loginData.data.success) {
-//     const verifyResult = await AuthRequests.verifyTINYSESSID(
-//       loginData.data.session.TINYSESSID
-//     );
-//     console.log("TINYSESSID Verification:", verifyResult);
-
-//     const finishResult = await AuthRequests.finishLogin(loginData.data.session);
-//     console.log("Finish Login Data:", finishResult);
-//   }
-// }
-
-// // Chamada de teste
-// testAuth();

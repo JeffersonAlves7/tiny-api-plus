@@ -108,7 +108,7 @@ export class EstoqueManager {
   // Obter todas as paginas de pacote dados impressao estoque
   /**
    *
-   * @param {'Loja 1' | 'Matriz' | 'Loja 2'} estoque
+   * @param {'Loja 1' | 'Matriz' | 'Loja 2' | '0' } estoque
    * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
    */
   async getAllPagesFromObterPacoteDadosImpressaoEstoque(estoque) {
@@ -119,7 +119,6 @@ export class EstoqueManager {
         i,
         estoque
       );
-      console.log({ length: values[0].length, first: values[0][0] });
       if (values[0].length == 0) return products;
 
       products.push(...values[0]);
@@ -128,7 +127,7 @@ export class EstoqueManager {
 
   /**
    *
-   * @param {'Loja 1' | 'Matriz' | 'Loja 2'} estoque
+   * @param {'Loja 1' | 'Matriz' | 'Loja 2' | '0'} estoque - 0 is all the stores combined in one
    * @param {number} page
    * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
    */
@@ -137,6 +136,7 @@ export class EstoqueManager {
       'Loja 1': '497662283',
       'Matriz': '663192122',
       'Loja 2': '',
+      '0': '0', // If it is 0, it will get all the products from all the stores
     }
 
     const produtosResponse =
@@ -156,5 +156,41 @@ export class EstoqueManager {
       return productsValue;
     }
     return [];
+  }
+
+  /**
+   * @typedef {Object} EstoqueMultiEmpresa
+   */
+
+  /**
+   * @typedef {Object} ProdutoEstoqueMultiEmpresa
+   * @property {string} id
+   * @property {EstoqueMultiEmpresa} estoque
+   * 
+   */
+
+  /**
+   * @param {string[]} ids
+   * @returns {Promise<ProdutoEstoqueMultiEmpresa[]>}
+   */
+  async getAllPagesFromEstoqueProdutosMultiEmpresa(ids) {
+    // Separe the ids in group of 100
+    const idsGroups = [];
+    for (let i = 0; i < ids.length; i += 100) {
+      idsGroups.push(ids.slice(i, i + 100));
+    }
+
+    // Get all the products from the ids
+    const products = [];
+    for (const idsGroup of idsGroups) {
+      const {response} =
+        await EstoqueRequests.carregarLoteEstoqueProdutosMultiEmpresa(
+          this.TINYSESSID,
+          idsGroup
+        );
+      products.push(...response[0].val);
+    }
+
+    return products;
   }
 }

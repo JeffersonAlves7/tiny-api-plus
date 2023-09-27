@@ -17,7 +17,7 @@ export class EstoqueRequests {
       "content-type",
       "application/x-www-form-urlencoded; charset=UTF-8"
     );
-    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};` );
+    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};`);
     myHeaders.append("x-custom-request-for", "XAJAX");
 
     var urlencoded = new URLSearchParams();
@@ -36,24 +36,24 @@ export class EstoqueRequests {
         body: urlencoded,
         redirect: "follow",
       }
-    )
+    );
 
-    return response.json()
+    return response.json();
   }
 
   /**
-   * 
-   * @param {string} TINYSESSID 
-   * @param {number} page 
+   *
+   * @param {string} TINYSESSID
+   * @param {number} page
    * @param {string} estoqueId
    */
-  static async obterPacoteDadosImpressaoEstoque(TINYSESSID, page, estoqueId){
+  static async obterPacoteDadosImpressaoEstoque(TINYSESSID, page, estoqueId) {
     var myHeaders = new Headers();
     myHeaders.append(
       "content-type",
       "application/x-www-form-urlencoded; charset=UTF-8"
     );
-    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};` );
+    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};`);
     myHeaders.append("x-custom-request-for", "XAJAX");
 
     var urlencoded = new URLSearchParams();
@@ -72,7 +72,42 @@ export class EstoqueRequests {
         body: urlencoded,
         redirect: "follow",
       }
-    )
+    );
+
+    return response.json();
+  }
+
+  /**
+   *
+   * @param {string} TINYSESSID
+   * @param {string[]} productsIds
+   */
+  static async carregarLoteEstoqueProdutosMultiEmpresa(
+    TINYSESSID,
+    productsIds
+  ) {
+    var myHeaders = new Headers();
+    myHeaders.append(
+      "content-type",
+      "application/x-www-form-urlencoded; charset=UTF-8"
+    );
+    myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};`);
+    myHeaders.append("x-custom-request-for", "XAJAX");
+
+    var urlencoded = new URLSearchParams();
+    urlencoded.append("type", "1");
+    urlencoded.append("func", "carregarLoteEstoqueProdutosMultiEmpresa");
+    urlencoded.append(
+      "args",
+      `[[${productsIds.map((id) => `"${id}"`).join(",")}],"0","F"]`
+    );
+
+    const response = await fetch("https://erp.tiny.com.br/services/estoque.relatorios.server.php", {
+      method: "POST",
+      headers: myHeaders,
+      body: urlencoded,
+      redirect: "follow",
+    })
 
     return response.json()
   }
