@@ -106,9 +106,9 @@ class AppManager {
   }
 
   /**
-   * 
+   *
    * @param {number} period - Período em meses.
-   * @returns 
+   * @returns
    */
   async getProductDataWithSales(period) {
     const vendas = await this.getSalesPerPeriod(period);
@@ -126,7 +126,10 @@ class AppManager {
 }
 
 async function main() {
-  removeFetches(); 
+  // get date when the script started
+  const startDate = new Date();
+
+  removeFetches();
 
   // Get the product id, descricao, marca
   const authManager = new AuthManager();
@@ -134,19 +137,44 @@ async function main() {
 
   await appManager.login();
 
-  // Coletar vendas por um período
-  // const vendas = appManager.getVendasPerPeriod(1);
-  // fs.writeFileSync("vendas.json", JSON.stringify(vendas, null, 2));
+  const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
 
-  const produtos = await appManager.getProductDataWithSales(3);
-  fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+  const estoqueDoDiaLoja1 =
+    await estoqueManager.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+      "27/08/2023",
+      "27/09/2023",
+      "Loja 1"
+    );
 
-  // const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
-  // const produtosPagina1 = await estoqueManager.getPageFromObterPacoteDadosImpressao(0);
-  // const produtosEstoque = await estoqueManager.getAllPagesFromEstoqueProdutosMultiEmpresa(produtosPagina1.map((produto) => produto.id));
+  fs.writeFileSync(
+    "produtosDia-1-7-2021.json",
+    JSON.stringify(estoqueDoDiaLoja1, null, 2)
+  );
 
-  // console.log({produtosEstoque})
+  // const produtos = await appManager.getProductDataWithSales(3);
+  // fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+
   const fetches = await numberOfFetchs();
   console.log({ fetches });
+
+  // get date when script ended
+  const endDate = new Date();
+
+  // calculate the time difference in seconds
+  const timeDiff = (endDate.getTime() - startDate.getTime()) / 1000;
+
+  // calculate the time difference in minutes
+  const timeDiffInMinutes = timeDiff / 60;
+
+  // calculate the time difference in hours
+  const timeDiffInHours = timeDiffInMinutes / 60;
+
+  // print time difference in seconds
+  console.log(`Time taken to execute the script: ${timeDiff} seconds`);
+  console.log(`Time taken to execute the script: ${timeDiffInMinutes} minutes`);
+  // log the time taken to execute the script in hours
+  console.log(`Time taken to execute the script: ${timeDiffInHours} hours`);
+
+  process.exit(0);
 }
 main();

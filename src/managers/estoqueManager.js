@@ -1,6 +1,17 @@
 //@ts-check
 
 import { EstoqueRequests } from "../requests/estoqueRequests.js";
+import { formatCustomDate, stringToDate } from "../utils/dateUtils.js";
+
+const ESTOQUES = {
+  "Loja 1": "497662283",
+  Matriz: "663192122",
+  0: "0", // If it is 0, it will get all the products from all the stores
+};
+
+/**
+ * @typedef {'Loja 1' | 'Matriz' | '0'} Estoque
+ */
 
 /**
  * Estoque Manager
@@ -108,7 +119,7 @@ export class EstoqueManager {
   // Obter todas as paginas de pacote dados impressao estoque
   /**
    *
-   * @param {'Loja 1' | 'Matriz' | 'Loja 2' | '0' } estoque
+   * @param {Estoque} estoque
    * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
    */
   async getAllPagesFromObterPacoteDadosImpressaoEstoque(estoque) {
@@ -127,23 +138,16 @@ export class EstoqueManager {
 
   /**
    *
-   * @param {'Loja 1' | 'Matriz' | 'Loja 2' | '0'} estoque - 0 is all the stores combined in one
+   * @param {Estoque} estoque - 0 is all the stores combined in one
    * @param {number} page
    * @returns {Promise<ProducoPacoteDadosImpressaoEstoque[]>}
    */
   async getPageFromObterPacoteDadosImpressaoEstoque(page, estoque) {
-    const estoques = { 
-      'Loja 1': '497662283',
-      'Matriz': '663192122',
-      'Loja 2': '',
-      '0': '0', // If it is 0, it will get all the products from all the stores
-    }
-
     const produtosResponse =
       await EstoqueRequests.obterPacoteDadosImpressaoEstoque(
         this.TINYSESSID,
         page,
-        estoques[estoque]
+        ESTOQUES[estoque]
       );
 
     const searchValue = /retornoPacote\((.*)\)/g.exec(
@@ -159,14 +163,10 @@ export class EstoqueManager {
   }
 
   /**
-   * @typedef {Object} EstoqueMultiEmpresa
-   */
-
-  /**
    * @typedef {Object} ProdutoEstoqueMultiEmpresa
    * @property {string} id
-   * @property {EstoqueMultiEmpresa} estoque
-   * 
+   * @property {Object} estoque
+   *
    */
 
   /**
@@ -183,7 +183,7 @@ export class EstoqueManager {
     // Get all the products from the ids
     const products = [];
     for (const idsGroup of idsGroups) {
-      const {response} =
+      const { response } =
         await EstoqueRequests.carregarLoteEstoqueProdutosMultiEmpresa(
           this.TINYSESSID,
           idsGroup
@@ -192,5 +192,77 @@ export class EstoqueManager {
     }
 
     return products;
+  }
+
+  /**
+   * Esta retornando apenas o id dos produtos
+   * @param {string} dataInicio - dd/MM/yyyy
+   * @param {string} dataFim - dd/MM/yyyy
+   * @param {Estoque} estoque
+   */
+  async getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(dataInicio, dataFim, estoque){
+    // Loop de dataInicio ate dataFim
+    const productsZ = [];
+
+    for (
+      let date = stringToDate(dataInicio);
+      date <= stringToDate(dataFim);
+      date.setDate(date.getDate() + 1)
+    ) {
+      const data = formatCustomDate(date, "dd/MM/yyyy");
+      const products =
+        await this.getAllPagesFromRelatorioSaldosPorDiaComEstoqueZerado(
+          data,
+          estoque
+        );
+      productsZ.push(...products);
+    }
+
+    return productsZ;
+  }
+
+  /**
+   * Essa função retorna produtos com o estoque zerado no dia especificado, no momento estou retornando apenas o ID
+   * @param {string} data - dd/MM/yyyy
+   * @param {Estoque} estoque
+   * @returns
+   */
+  async getAllPagesFromRelatorioSaldosPorDiaComEstoqueZerado(data, estoque) {
+    const pagesResponse = await EstoqueRequests.obterDadosRelatorioSaldos(
+      this.TINYSESSID,
+      {
+        data: data,
+        filtroEstoque: "Z", // Apenas estoque zerado
+        idDeposito: ESTOQUES[estoque],
+      }
+    );
+
+    const numOfPages = pagesResponse.response[0].val.pacotes;
+    const productsZ = [];
+
+    for (let i = 0; i < numOfPages; i++) {
+      const response = await this.getPageFromRelatorioSaldosPorDia(
+        i,
+        numOfPages
+      );
+      productsZ.push(...response.map((/** @type {any} */ v) => v.idProduto));
+    }
+
+    console.log({ data, numOfPages, len: productsZ.length });
+    return productsZ;
+  }
+
+  /**
+   *
+   * @param {number} page
+   * @param {number} maxPage
+   */
+  async getPageFromRelatorioSaldosPorDia(page, maxPage) {
+    const { response } = await EstoqueRequests.obterPacoteDadosRelatorioSaldos(
+      this.TINYSESSID,
+      page,
+      maxPage
+    );
+    return response[0].val;
   }
 }

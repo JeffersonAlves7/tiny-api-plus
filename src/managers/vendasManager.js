@@ -21,7 +21,7 @@ export class VendasManager {
   /**
    * @param {string} dataInicio - Formato: YYYY-MM-DD
    * @param {string} dataFim - Formato: YYYY-MM-DD
-   * @returns 
+   * @returns
    */
   async getAllPagesFromVendasRelatorioVendas(dataInicio, dataFim) {
     const maxPage = await this.getNumPages(dataInicio, dataFim);
@@ -57,7 +57,7 @@ export class VendasManager {
   }
 
   /**
-   * 
+   *
    * @param {string} dataInicio - Formato: YYYY-MM-DD
    * @param {string} dataFim - Formato: YYYY-MM-DD
    */
