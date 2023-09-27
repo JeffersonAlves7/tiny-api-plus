@@ -4,6 +4,8 @@
  * @property {string} password - Senha do usuário.
  */
 
+import { increaseFetch } from "../utils/fetchUtils.js";
+
 /**
  * @typedef {Object} LoginData - Dados de login após a autenticação.
  * @property {string} uidLogin - UID de login.
@@ -24,6 +26,7 @@ export class AuthRequests {
       args: `[{"login":"${userData.email}","senha":"${userData.password}","derrubarSessoes":true,"ehParceiro":false,"captchaResponse":"","sessionAccounts":{}}]`,
     };
 
+    increaseFetch();
     const response = await fetch(
       "https://erp.tiny.com.br/services/reforma.sistema.server.php",
       {
@@ -54,6 +57,7 @@ export class AuthRequests {
       args: `["${loginData.uidLogin}",${loginData.idUsuario},null]`,
     };
 
+    increaseFetch();
     const response = await fetch(
       "https://erp.tiny.com.br/services/reforma.sistema.server.php",
       {
@@ -84,6 +88,7 @@ export class AuthRequests {
         func: "obterDadosRelatorioSaldos",
       };
 
+      increaseFetch();
       const response = await fetch(
         "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
         {

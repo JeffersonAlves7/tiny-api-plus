@@ -3,9 +3,13 @@
 import { AuthManager } from "./managers/authManager.js";
 import { EstoqueManager } from "./managers/estoqueManager.js";
 import { VendasManager } from "./managers/vendasManager.js";
-import { formatCustomDate, getFirstAndLastDayOfPeriod } from "./utils/dateUtils.js";
+import {
+  formatCustomDate,
+  getFirstAndLastDayOfPeriod,
+} from "./utils/dateUtils.js";
 import { getEnv } from "./utils/envUtils.js";
 import fs from "fs";
+import { numberOfFetchs, removeFetches } from "./utils/fetchUtils.js";
 
 // Create a AppManager to manage all the application
 /**
@@ -37,8 +41,15 @@ class AppManager {
     const produtos =
       await estoqueManager.getAllPagesFromObterPacoteDadosImpressao();
 
-    const produtosEstoque =
-      await estoqueManager.getAllPagesFromObterPacoteDadosImpressaoEstoque("0");
+    const produtosEstoqueLojaMatriz =
+      await estoqueManager.getAllPagesFromObterPacoteDadosImpressaoEstoque(
+        "Loja 1"
+      );
+
+    const produtosEstoqueDepositoMatriz =
+      await estoqueManager.getAllPagesFromObterPacoteDadosImpressaoEstoque(
+        "Matriz"
+      );
 
     const produtosEstoqueMultiempresa =
       await estoqueManager.getAllPagesFromEstoqueProdutosMultiEmpresa(
@@ -47,10 +58,15 @@ class AppManager {
 
     // Combinar campos dos produtos da matriz e da loja 1 com os protudos da variavel produtos
     return produtos.map((produto, index) => {
-      let produtoEstoque =
-        produtosEstoque[index].id == produto.id
-          ? produtosEstoque[index]
-          : produtosEstoque.find((v) => v.id === produto.id);
+      let produtoEstoqueLojaMatriz =
+        produtosEstoqueLojaMatriz[index].id == produto.id
+          ? produtosEstoqueLojaMatriz[index]
+          : produtosEstoqueLojaMatriz.find((v) => v.id === produto.id);
+
+      let produtoEstoqueDepositoMatriz =
+        produtosEstoqueDepositoMatriz[index].id == produto.id
+          ? produtosEstoqueDepositoMatriz[index]
+          : produtosEstoqueDepositoMatriz.find((v) => v.id === produto.id);
 
       let produtoEstoqueMultiempresa =
         produtosEstoqueMultiempresa[index].id == produto.id
@@ -59,10 +75,14 @@ class AppManager {
 
       const { estoque, ...allData } = {
         ...produto,
-        ...(produtoEstoque ?? {}),
+        ...(produtoEstoqueDepositoMatriz ?? {}),
+        ...(produtoEstoqueLojaMatriz ?? {}),
+        estoqueLojaMatriz: produtoEstoqueLojaMatriz?.estoque,
+        estoqueDepositoMatriz: produtoEstoqueDepositoMatriz?.estoque,
+        estoqueLojaFilial: `${produtoEstoqueMultiempresa?.estoque["628666680"].totalDisponivel}`,
       };
 
-      return { ...allData, estoque: produtoEstoqueMultiempresa?.estoque };
+      return allData;
     });
   }
 
@@ -74,16 +94,21 @@ class AppManager {
     const vendasManager = new VendasManager(this.authManager.getTINYSESSID());
 
     const dataPeloPeriodo = getFirstAndLastDayOfPeriod(periodo);
-    const dataInicio = formatCustomDate(dataPeloPeriodo[0], 'yyyy-MM-dd');
+    const dataInicio = formatCustomDate(dataPeloPeriodo[0], "yyyy-MM-dd");
     const dataFim = formatCustomDate(dataPeloPeriodo[1], "yyyy-MM-dd");
 
-    const vendas = await vendasManager.getAllPagesFromVendasRelatorioVendas(dataInicio, dataFim);
+    const vendas = await vendasManager.getAllPagesFromVendasRelatorioVendas(
+      dataInicio,
+      dataFim
+    );
 
     return vendas;
   }
 }
 
 async function main() {
+  removeFetches();
+
   // Get the product id, descricao, marca
   const authManager = new AuthManager();
   const appManager = new AppManager(authManager);
@@ -91,16 +116,18 @@ async function main() {
   await appManager.login();
 
   // Coletar vendas por um período
-  const vendas = appManager.getVendasPerPeriod(1);
-  fs.writeFileSync("vendas.json", JSON.stringify(vendas, null, 2));
+  // const vendas = appManager.getVendasPerPeriod(1);
+  // fs.writeFileSync("vendas.json", JSON.stringify(vendas, null, 2));
 
-  // const produtos = await appManager.getProductData();
-  // fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+  const produtos = await appManager.getProductData();
+  fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
 
   // const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
   // const produtosPagina1 = await estoqueManager.getPageFromObterPacoteDadosImpressao(0);
   // const produtosEstoque = await estoqueManager.getAllPagesFromEstoqueProdutosMultiEmpresa(produtosPagina1.map((produto) => produto.id));
 
   // console.log({produtosEstoque})
+  const fetches = await numberOfFetchs();
+  console.log({ fetches });
 }
 main();

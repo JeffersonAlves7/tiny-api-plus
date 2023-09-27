@@ -1,5 +1,7 @@
 // @ts-check
 
+import { increaseFetch } from "../utils/fetchUtils.js";
+
 /**
  * Classe para fazer requisições relacionadas ao estoque.
  * @class
@@ -28,6 +30,7 @@ export class EstoqueRequests {
       `[{"criterio":"opc-ativo","pesquisa":"","idTag":"0","pagina":${page},"tipo":"","tipoCadastroProduto":"P","classeProduto":"","codigoProduto":"","idCategoria":"0","tipoOrdenacao":"","idEcommerce":"-1","parametroImpressao":"N","idFornecedorFiltro":"0","dataAtualizacaoKitPsq":"","dataAtualizacaoProdutoPsq":""}]`
     );
 
+    increaseFetch();
     const response = await fetch(
       "https://erp.tiny.com.br/services/produtos.server.php",
       {
@@ -64,6 +67,7 @@ export class EstoqueRequests {
       `[${page},{"idTag":"0","pesquisa":"","campoPesquisa":"","idCategoria":"","idFornecedorFiltro":"0","idDeposito":"${estoqueId}","classeProduto":"","idsVariacoes":"","agruparEstoqueMultiEmp":"false","iframe-page":"1"}]`
     );
 
+    increaseFetch();
     const response = await fetch(
       "https://erp.tiny.com.br/services/estoques.server.php",
       {
@@ -102,13 +106,17 @@ export class EstoqueRequests {
       `[[${productsIds.map((id) => `"${id}"`).join(",")}],"0","F"]`
     );
 
-    const response = await fetch("https://erp.tiny.com.br/services/estoque.relatorios.server.php", {
-      method: "POST",
-      headers: myHeaders,
-      body: urlencoded,
-      redirect: "follow",
-    })
+    increaseFetch();
+    const response = await fetch(
+      "https://erp.tiny.com.br/services/estoque.relatorios.server.php",
+      {
+        method: "POST",
+        headers: myHeaders,
+        body: urlencoded,
+        redirect: "follow",
+      }
+    );
 
-    return response.json()
+    return response.json();
   }
 }

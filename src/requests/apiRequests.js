@@ -1,6 +1,7 @@
 // @ts-check
 
 import { getEnv } from "../utils/envUtils.js";
+import { increaseFetch } from "../utils/fetchUtils.js";
 
 export class ApiRequests {
   constructor() {
@@ -27,6 +28,7 @@ export class ApiRequests {
 
     const searchParams = new URLSearchParams(params);
 
+    increaseFetch();
     const response = await fetch(url, {
       method: "POST",
       body: searchParams,
@@ -54,6 +56,7 @@ export class ApiRequests {
 
     const searchParams = new URLSearchParams(params);
 
+    increaseFetch();
     const response = await fetch(url, {
       method: "POST",
       body: searchParams,
@@ -77,6 +80,7 @@ export class ApiRequests {
 
     const searchParams = new URLSearchParams(params);
 
+    increaseFetch();
     const response = await fetch(url, {
       method: "POST",
       body: searchParams,
