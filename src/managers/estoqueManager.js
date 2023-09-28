@@ -205,8 +205,8 @@ export class EstoqueManager {
     dataFim,
     estoque
   ) {
-    // Create a Map object to save the ID of the products and count the occurences
-    const productsMap = new Map();
+    // a variable to save the products separe by the days
+    const json = {};
 
     for (
       let date = stringToDate(dataInicio);
@@ -219,24 +219,17 @@ export class EstoqueManager {
           estoque
         );
 
-      // Add the products to the map, this will return the ids products array
       products.forEach((product) => {
-        productsMap.set(
-          product.idProduto,
-          (productsMap.get(product.idProduto) ?? 0) + 1
-        );
+        // save the day in json and save the product id inside the day
+        if (json[formatCustomDate(date, "dd/MM/yyyy")]) {
+          json[formatCustomDate(date, "dd/MM/yyyy")] = [
+            ...json[formatCustomDate(date, "dd/MM/yyyy")],
+            product.idProduto,
+          ];
+        } else {
+          json[formatCustomDate(date, "dd/MM/yyyy")] = [product.idProduto];
+        }
       });
-    }
-
-    const json = {};
-
-    // do a loop to the map keys
-    for (const key of productsMap.keys()) {
-      // get the value from the map
-      const value = productsMap.get(key);
-
-      // add the key and value to the json
-      json[key] = value;
     }
 
     return json;

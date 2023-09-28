@@ -35,7 +35,12 @@ class AppManager {
     await this.authManager.login(getEnv("USER_EMAIL"), getEnv("USER_PASSWORD"));
   }
 
-  async getProductData() {
+  /**
+   *
+   * @param {number} period - Período em meses.
+   * @returns
+   */
+  async getProductData(period) {
     const estoqueManager = new EstoqueManager(this.authManager.getTINYSESSID());
 
     const produtos =
@@ -56,6 +61,8 @@ class AppManager {
         produtos.map((produto) => produto.id)
       );
 
+    const vendasLojaMatriz = await this.getSalesPerPeriod(period);
+
     // Combinar campos dos produtos da matriz e da loja 1 com os protudos da variavel produtos
     return produtos.map((produto, index) => {
       let produtoEstoqueLojaMatriz =
@@ -73,6 +80,10 @@ class AppManager {
           ? produtosEstoqueMultiempresa[index]
           : produtosEstoqueMultiempresa.find((v) => v.id === produto.id);
 
+      const vendaLojaMatriz = vendasLojaMatriz.find(
+        (venda) => venda.codigo === produto.codigo
+      );
+
       const { estoque, ...allData } = {
         ...produto,
         ...(produtoEstoqueDepositoMatriz ?? {}),
@@ -80,6 +91,7 @@ class AppManager {
         estoqueLojaMatriz: produtoEstoqueLojaMatriz?.estoque,
         estoqueDepositoMatriz: produtoEstoqueDepositoMatriz?.estoque,
         estoqueLojaFilial: `${produtoEstoqueMultiempresa?.estoque["628666680"].totalDisponivel}`,
+        vendaLojaMatriz: vendaLojaMatriz?.quantidade ?? 0,
       };
 
       return allData;
@@ -107,27 +119,38 @@ class AppManager {
 
   /**
    *
-   * @param {number} period - Período em meses.
+   * @param {string} diaInicio - dd/MM/yyyy
+   * @param {string} diaFim - dd/MM/yyyy
    * @returns
    */
-  async getProductDataWithSales(period) {
-    const vendas = await this.getSalesPerPeriod(period);
-    const produtos = await this.getProductData();
+  async getEstoquePorDiaPorPeriodo(diaInicio, diaFim) {
+    const estoqueManager = new EstoqueManager(this.authManager.getTINYSESSID());
 
-    return produtos.map((produto) => {
-      const venda = vendas.find((venda) => venda.codigo === produto.codigo);
+    const estoqueDoDiaLoja1 =
+      await estoqueManager.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+        diaInicio,
+        diaFim,
+        "Loja 1"
+      );
 
-      return {
-        ...produto,
-        vendaLojaMatriz: venda?.quantidade ?? 0,
-      };
-    });
+    // const estoqueDoDiaLoja2 =
+    //   await estoqueManager.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+    //     diaInicio,
+    //     diaFim,
+    //     "Loja 1"
+    //   );
+
+    return {
+      loja1: estoqueDoDiaLoja1,
+      loja2: null,
+    };
   }
 }
 
 async function main() {
   // get date when the script started
   const startDate = new Date();
+  console.log(startDate);
 
   removeFetches();
 
@@ -137,22 +160,9 @@ async function main() {
 
   await appManager.login();
 
-  const estoqueManager = new EstoqueManager(authManager.getTINYSESSID());
+  const produtos = await appManager.getProductData(2);
 
-  const estoqueDoDiaLoja1 =
-    await estoqueManager.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
-      "27/08/2023",
-      "27/09/2023",
-      "Loja 1"
-    );
-
-  fs.writeFileSync(
-    "produtosDia-1-7-2021.json",
-    JSON.stringify(estoqueDoDiaLoja1, null, 2)
-  );
-
-  // const produtos = await appManager.getProductDataWithSales(3);
-  // fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+  fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
 
   const fetches = await numberOfFetchs();
   console.log({ fetches });
@@ -177,4 +187,5 @@ async function main() {
 
   process.exit(0);
 }
+
 main();
