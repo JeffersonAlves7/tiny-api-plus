@@ -200,34 +200,57 @@ export class EstoqueManager {
    * @param {string} dataFim - dd/MM/yyyy
    * @param {Estoque} estoque
    */
-  async getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(dataInicio, dataFim, estoque){
-    // Loop de dataInicio ate dataFim
-    const productsZ = [];
+  async getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+    dataInicio,
+    dataFim,
+    estoque
+  ) {
+    // Create a Map object to save the ID of the products and count the occurences
+    const productsMap = new Map();
 
     for (
       let date = stringToDate(dataInicio);
       date <= stringToDate(dataFim);
       date.setDate(date.getDate() + 1)
     ) {
-      const data = formatCustomDate(date, "dd/MM/yyyy");
       const products =
         await this.getAllPagesFromRelatorioSaldosPorDiaComEstoqueZerado(
-          data,
+          formatCustomDate(date, "dd/MM/yyyy"),
           estoque
         );
-      productsZ.push(...products);
+
+      // Add the products to the map, this will return the ids products array
+      products.forEach((product) => {
+        productsMap.set(
+          product.idProduto,
+          (productsMap.get(product.idProduto) ?? 0) + 1
+        );
+      });
     }
 
-    return productsZ;
+    const json = {};
+
+    // do a loop to the map keys
+    for (const key of productsMap.keys()) {
+      // get the value from the map
+      const value = productsMap.get(key);
+
+      // add the key and value to the json
+      json[key] = value;
+    }
+
+    return json;
   }
 
   /**
-   * Essa função retorna produtos com o estoque zerado no dia especificado, no momento estou retornando apenas o ID
+   *
    * @param {string} data - dd/MM/yyyy
    * @param {Estoque} estoque
    * @returns
    */
   async getAllPagesFromRelatorioSaldosPorDiaComEstoqueZerado(data, estoque) {
+    console.log(data);
+
     const pagesResponse = await EstoqueRequests.obterDadosRelatorioSaldos(
       this.TINYSESSID,
       {
@@ -245,10 +268,9 @@ export class EstoqueManager {
         i,
         numOfPages
       );
-      productsZ.push(...response.map((/** @type {any} */ v) => v.idProduto));
+      productsZ.push(...response);
     }
 
-    console.log({ data, numOfPages, len: productsZ.length });
     return productsZ;
   }
 
