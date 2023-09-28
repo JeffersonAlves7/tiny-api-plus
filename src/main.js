@@ -18,7 +18,7 @@ import { UserManager } from "./managers/userManager.js";
 class AppManager {
   /**
    * @param {UserManager} userLojaMatriz
-   * @param {UserManager} userLojaFilial 
+   * @param {UserManager} userLojaFilial
    */
   constructor(userLojaMatriz, userLojaFilial) {
     /**
@@ -33,10 +33,10 @@ class AppManager {
    * @param {boolean} saveTINYSESSID - If it should save the TINYSESSID in the database
    */
   async login(saveTINYSESSID = true) {
-    if(saveTINYSESSID){
+    if (saveTINYSESSID) {
       await this.userLojaMatriz.loadTINYSESSID();
       await this.userLojaFilial.loadTINYSESSID();
-    } 
+    }
 
     await this.userLojaMatriz.login();
     await this.userLojaFilial.login();
@@ -48,7 +48,9 @@ class AppManager {
    * @returns
    */
   async getProductData(period) {
-    const estoqueMatrizManager = new EstoqueManager(this.userLojaMatriz.getTINYSESSID());
+    const estoqueMatrizManager = new EstoqueManager(
+      this.userLojaMatriz.getTINYSESSID()
+    );
 
     const produtos =
       await estoqueMatrizManager.getAllPagesFromObterPacoteDadosImpressao();
@@ -68,8 +70,14 @@ class AppManager {
         produtos.map((produto) => produto.id)
       );
 
-    const vendasLojaMatriz = await this.getSalesPerPeriod(period, this.userLojaMatriz);
-    const vendasLojaFilial = await this.getSalesPerPeriod(period, this.userLojaFilial);
+    const vendasLojaMatriz = await this.getSalesPerPeriod(
+      period,
+      this.userLojaMatriz
+    );
+    const vendasLojaFilial = await this.getSalesPerPeriod(
+      period,
+      this.userLojaFilial
+    );
 
     // Combinar campos dos produtos da matriz e da loja 1 com os protudos da variavel produtos
     return produtos.map((produto, index) => {
@@ -136,17 +144,29 @@ class AppManager {
    *
    * @param {string} diaInicio - dd/MM/yyyy
    * @param {string} diaFim - dd/MM/yyyy
-   * @param {UserManager} user - dd/MM/yyyy
    * @returns
    */
-  async getEstoquePorDiaPorPeriodo(diaInicio, diaFim, user) {
-    const estoqueManager = new EstoqueManager(user.getTINYSESSID());
+  async getEstoquePorDiaPorPeriodo(diaInicio, diaFim) {
+    const estoqueManagerMatriz = new EstoqueManager(
+      this.userLojaMatriz.getTINYSESSID()
+    );
 
-    const estoqueDoDiaLoja1 =
-      await estoqueManager.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+    const estoqueDoDiaMatriz =
+      await estoqueManagerMatriz.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
         diaInicio,
         diaFim,
         "Loja 1"
+      );
+
+    const estoqueManagerFilial = new EstoqueManager(
+      this.userLojaFilial.getTINYSESSID()
+    )
+
+    const estoqueDoDiaFilial =
+      await estoqueManagerFilial.getRelatorioSaldosPorDiaComEstoqueZeradoPerPeriod(
+        diaInicio,
+        diaFim,
+        "0"
       );
 
     // const estoqueDoDiaLoja2 =
@@ -157,8 +177,8 @@ class AppManager {
     //   );
 
     return {
-      loja1: estoqueDoDiaLoja1,
-      loja2: null,
+      loja1: estoqueDoDiaMatriz,
+      loja2: estoqueDoDiaFilial,
     };
   }
 }
@@ -174,8 +194,8 @@ async function main() {
   const emailUser2 = getEnv("USER2_EMAIL");
   const passwordUser2 = getEnv("USER2_PASSWORD");
 
-  const User1 = new UserManager(emailUser1, passwordUser1, 'matriz');
-  const User2 = new UserManager(emailUser2, passwordUser2, 'filial');
+  const User1 = new UserManager(emailUser1, passwordUser1, "matriz");
+  const User2 = new UserManager(emailUser2, passwordUser2, "filial");
 
   removeFetches();
 
@@ -184,10 +204,16 @@ async function main() {
 
   await appManager.login(false);
 
-  const produtos = await appManager.getProductData(1);
+  // const produtos = await appManager.getProductData(1);
+  // fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
 
-  fs.writeFileSync("produtos.json", JSON.stringify(produtos, null, 2));
+  const estoquePorDia = await appManager.getEstoquePorDiaPorPeriodo( "27/09/2023", "27/09/2023",);
+  fs.writeFileSync(
+    "estoquepordia.json",
+    JSON.stringify(estoquePorDia, null, 2)
+  );
 
+  // ---------------------------------- FINAL ---------------------------
   const fetches = await numberOfFetchs();
   console.log({ fetches });
 
