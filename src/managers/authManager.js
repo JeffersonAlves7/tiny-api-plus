@@ -1,6 +1,7 @@
 //@ts-check
 import sqlite3 from "sqlite3";
 import { AuthRequests } from "../requests/authRequests.js";
+import { UserManager } from "./userManager.js";
 
 /**
  * Authentication manager.
@@ -22,7 +23,7 @@ export class AuthManager {
    *
    * @returns {Promise<any>}
    */
-  async loadTINYSESSIDFromDatabase() {
+  async loadTINYSESSID() {
     return new Promise((resolve, reject) => {
       // create a database connection
       const db = new sqlite3.Database("./database.sqlite3", (err) => {
@@ -45,7 +46,7 @@ export class AuthManager {
    *
    * @returns {Promise<any>}
    */
-  saveTINYSESSIDToDatabase() {
+  saveTINYSESSID() {
     return new Promise((resolve, reject) => {
       const db = new sqlite3.Database("./database.sqlite3", (err) => {
         if (err) {
@@ -85,9 +86,9 @@ export class AuthManager {
    * @param {string} userPassword - User's password.
    * @returns {Promise<string|null>} - The TINYSESSID if login is successful, otherwise null.
    */
-  async login(userEmail, userPassword) {
+  async login(userEmail, userPassword, saveTINYSESSID = true) {
     try {
-      if (this.TINYSESSID && this.TINYSESSID != "0") {
+      if (saveTINYSESSID && this.TINYSESSID && this.TINYSESSID != "0") {
         const isAuth = await AuthRequests.verifyTINYSESSID(this.TINYSESSID);
         console.log({ isAuth });
         if (isAuth) return this.TINYSESSID;
@@ -120,7 +121,7 @@ export class AuthManager {
 
       this.TINYSESSID = TINYSESSID;
 
-      this.saveTINYSESSIDToDatabase().catch(console.error);
+      if (saveTINYSESSID) this.saveTINYSESSID().catch(console.error);
 
       return this.TINYSESSID;
     } catch (e) {

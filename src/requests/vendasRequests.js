@@ -49,12 +49,16 @@ export class VendasRequests {
    * @param {string} TINYSESSID
    * @param {string} dataInicio - Formato: YYYY-MM-DD
    * @param {string} dataFim - Formato: YYYY-MM-DD
+   * @param {'matriz' | 'filial'} loja
    */
   static async obterDadosRelatorioGeralDeVendas(
     TINYSESSID,
     dataInicio,
-    dataFim
+    dataFim,
+    loja
   ) {
+    let operacoes = loja == 'matriz' ? '"628626110","713393608","497662225","x"' : '"664223454","631680758","x"'
+
     var myHeaders = new Headers();
 
     myHeaders.append(
@@ -64,7 +68,7 @@ export class VendasRequests {
     myHeaders.append("cookie", `TINYSESSID=${TINYSESSID};`);
     myHeaders.append("x-custom-request-for", "XAJAX");
 
-    var raw = `type=1&func=obterDadosRelatorioGeralDeVendas&argsLength=494&timeInicio=1695774610895&versaoFront=3.55.22&location=https://erp.tiny.com.br/relatorio_vendas&duplicidade=0&args=[{"origemDados":"N","agrupamento":"p","subAgrupamento":"n","exibirDevolucoes":"N","ordem":"n","dataIni":"${dataInicio}","dataFim":"${dataFim}","tipoPeriodo":"i","mostrarFrete":"S","idContato":"0","idProduto":"0","idVendedor":"","idMunicipio":"","uf":"+","idTag":"0","idMarcador":"0","idEcommerce":"-1","idCanalVendaEstatico":"-1","tipoLucro":"N","tipoCusto":"M","idCategoria":"","idsSituacoes":["2"],"idsVariacoes":[],"operacoes":["628626110","713393608","497662225","x"],"camposParaExibir":null}]`;
+    var raw = `type=1&func=obterDadosRelatorioGeralDeVendas&argsLength=494&timeInicio=1695774610895&versaoFront=3.55.22&location=https://erp.tiny.com.br/relatorio_vendas&duplicidade=0&args=[{"origemDados":"N","agrupamento":"p","subAgrupamento":"n","exibirDevolucoes":"N","ordem":"n","dataIni":"${dataInicio}","dataFim":"${dataFim}","tipoPeriodo":"i","mostrarFrete":"S","idContato":"0","idProduto":"0","idVendedor":"","idMunicipio":"","uf":"+","idTag":"0","idMarcador":"0","idEcommerce":"-1","idCanalVendaEstatico":"-1","tipoLucro":"N","tipoCusto":"M","idCategoria":"","idsSituacoes":["2"],"idsVariacoes":[],"operacoes":[${operacoes}],"camposParaExibir":null}]`;
 
     increaseFetch();
     const response = await fetch(

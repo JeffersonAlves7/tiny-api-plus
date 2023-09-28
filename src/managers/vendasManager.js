@@ -21,11 +21,18 @@ export class VendasManager {
   /**
    * @param {string} dataInicio - Formato: YYYY-MM-DD
    * @param {string} dataFim - Formato: YYYY-MM-DD
+   * @param {'matriz' | 'filial'} loja 
    * @returns
    */
-  async getAllPagesFromVendasRelatorioVendas(dataInicio, dataFim) {
-    const maxPage = await this.getNumPages(dataInicio, dataFim);
+  async getAllPagesFromVendasRelatorioVendas(dataInicio, dataFim, loja) {
+    const pageResponse = await VendasRequests.obterDadosRelatorioGeralDeVendas(
+      this.TINYSESSID,
+      dataInicio,
+      dataFim,
+      loja
+    );
 
+    const maxPage = pageResponse.response[0].val.pacotes.vendas;
     const vendas = [];
 
     for (let i = 0; i < maxPage; i++) {
@@ -54,20 +61,5 @@ export class VendasManager {
     );
 
     return response[0].val;
-  }
-
-  /**
-   *
-   * @param {string} dataInicio - Formato: YYYY-MM-DD
-   * @param {string} dataFim - Formato: YYYY-MM-DD
-   */
-  async getNumPages(dataInicio, dataFim) {
-    const { response } = await VendasRequests.obterDadosRelatorioGeralDeVendas(
-      this.TINYSESSID,
-      dataInicio,
-      dataFim
-    );
-    const numPages = response[0].val.pacotes.vendas;
-    return numPages;
   }
 }
