@@ -125,7 +125,6 @@ export class EstoqueRequests {
     }
   }
 
-
   /**
    * @typedef {Object} RelatorioSaldosArgs
    * @property {string} data - dd/MM/yyyy
@@ -167,12 +166,11 @@ export class EstoqueRequests {
       }
     );
 
-    try{
+    try {
       return response.json();
-    }
-    catch(e){
-      console.log(await response.text())
-      throw e
+    } catch (e) {
+      console.log(await response.text());
+      throw e;
     }
   }
 

@@ -13,4 +13,3 @@ export function getEnv(key) {
   if (!value) throw new Error(`Missing environment variable: ${key}`);
   return value;
 }
-

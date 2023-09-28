@@ -62,7 +62,6 @@ export function getFirstAndLastDayOfPeriod(periodo) {
   return [firstDay, lastDay];
 }
 
-
 /**
  * Function to transform a string dd/MM/yyyy to Date
  * @param {string} dateString - A string to be transformed to Date dd/MM/yyyy
@@ -72,4 +71,3 @@ export function stringToDate(dateString) {
   const [dia, mes, ano] = dateString.split("/");
   return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
 }
-
